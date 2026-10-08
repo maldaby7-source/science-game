@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>مغامرة العلوم</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        font-family: Arial, Tahoma, sans-serif;
+        background: linear-gradient(135deg, #74ebd5, #9face6);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #222;
+    }
+
+    .game {
+        width: 95%;
+        max-width: 900px;
+        background: white;
+        border-radius: 30px;
+        padding: 30px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        text-align: center;
+    }
+
+    h1 {
+        color: #3f51b5;
+        font-size: 42px;
+        margin: 5px 0 10px;
+    }
+
+    h2 {
+        font-size: 30px;
+        margin: 10px 0 20px;
+    }
+
+    .subtitle {
+        font-size: 22px;
+        color: #555;
+        margin-bottom: 25px;
+    }
+
+    .info {
+        display: flex;
+        justify-content: space-between;
+        background: #f1f3f6;
+        padding: 15px 25px;
+        border-radius: 18px;
+        font-size: 22px;
+        margin-bottom: 25px;
+        font-weight: bold;
+    }
+
+    .question {
+        font-size: 32px;
+        font-weight: bold;
+        margin: 25px 0;
+        line-height: 1.5;
+    }
+
+    .answers {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+    }
+
+    button {
+        border: none;
+        border-radius: 20px;
+        padding: 22px;
+        font-size: 25px;
+        font-weight: bold;
+        cursor: pointer;
+        background: #e8eaf6;
+        transition: 0.2s;
+    }
+
+    button:hover {
+        transform: scale(1.03);
+    }
+
+    .answer:hover {
+        background: #c5cae9;
+    }
+
+    .correct {
+        background: #4caf50 !important;
+        color: white;
+    }
+
+    .wrong {
+        background: #f44336 !important;
+        color: white;
+    }
+
+    .next {
+        background: #3f51b5;
+        color: white;
+        margin-top: 25px;
+        width: 60%;
+    }
+
+    .start {
+        background: #ff9800;
+        color: white;
+        width: 70%;
+        font-size: 30px;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    .message {
+        font-size: 26px;
+        font-weight: bold;
+        margin: 20px 0;
+        min-height: 35px;
+    }
+
+    .emoji {
+        font-size: 90px;
+        margin: 10px;
+    }
+
+    .result {
+        font-size: 32px;
+        font-weight: bold;
+        margin: 25px;
+    }
+
+    @media (max-width: 600px) {
+        h1 {
+            font-size: 32px;
+        }
+
+        h2 {
+            font-size: 24px;
+        }
+
+        .question {
+            font-size: 25px;
+        }
+
+        .answers {
+            grid-template-columns: 1fr;
+        }
+
+        button {
+            font-size: 21px;
+        }
+
+        .info {
+            font-size: 18px;
+        }
+
+        .game {
+            padding: 20px;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<div class="game">
+
+    <!-- شاشة البداية -->
+    <div id="startScreen">
+
+        <div class="emoji">🔬🧪🌱</div>
+
+        <h1>مغامرة العلوم</h1>
+
+        <h2>الكائنات الحية والأشياء غير الحية</h2>
+
+        <p class="subtitle">
+            هل أنت مستعد لاختبار معلوماتك؟ 🎓
+        </p>
+
+        <button class="start" onclick="startGame()">
+            🚀 ابدأ اللعبة
+        </button>
+
+    </div>
+
+
+    <!-- شاشة الأسئلة -->
+    <div id="gameScreen" class="hidden">
+
+        <div class="info">
+            <div>
+                السؤال:
+                <span id="questionNumber">1</span>
+            </div>
+
+            <div>
+                ⭐ النقاط:
+                <span id="score">0</span>
+            </div>
+        </div>
+
+        <div id="emoji" class="emoji">🐱</div>
+
+        <div id="question" class="question">
+            هل القطة كائن حي؟
+        </div>
+
+        <div id="answers" class="answers"></div>
+
+        <div id="message" class="message"></div>
+
+        <button id="nextButton" class="next hidden" onclick="nextQuestion()">
+            السؤال التالي ➡️
+        </button>
+
+    </div>
+
+
+    <!-- شاشة النتيجة -->
+    <div id="resultScreen" class="hidden">
+
+        <div class="emoji">🏆🎉</div>
+
+        <h1>أحسنت!</h1>
+
+        <div id="result" class="result"></div>
+
+        <button class="start" onclick="restartGame()">
+            🔄 العب مرة ثانية
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+
+const questions = [
+
+    {
+        emoji: "🐱",
+        question: "هل القطة كائن حي؟",
+        answers: ["نعم، كائن حي", "لا، شيء غير حي"],
+        correct: 0
+    },
+
+    {
+        emoji: "🪨",
+        question: "هل الحجر كائن حي؟",
+        answers: ["نعم، كائن حي", "لا، شيء غير حي"],
+        correct: 1
+    },
+
+    {
+        emoji: "🌳",
+        question: "هل الشجرة كائن حي؟",
+        answers: ["نعم، كائن حي", "لا، شيء غير حي"],
+        correct: 0
+    },
+
+    {
+        emoji: "🚗",
+        question: "هل السيارة كائن حي؟",
+        answers: ["نعم، كائن حي", "لا، شيء غير حي"],
+        correct: 1
+    },
+
+    {
+        emoji: "🐦",
+        question: "أي مما يلي كائن حي؟",
+        answers: ["طائر", "كرسي"],
+        correct: 0
+    },
+
+    {
+        emoji: "💧",
+        question: "ماذا تحتاج الكائنات الحية لكي تعيش؟",
+        answers: ["الماء والغذاء", "الألعاب فقط"],
+        correct: 0
+    },
+
+    {
+        emoji: "🌱",
+        question: "النباتات من الكائنات الحية.",
+        answers: ["صح", "خطأ"],
+        correct: 0
+    },
+
+    {
+        emoji: "📚",
+        question: "الكتاب كائن حي.",
+        answers: ["صح", "خطأ"],
+        correct: 1
+    }
+
+];
+
+let currentQuestion = 0;
+let score = 0;
+let answered = false;
+
+
+function startGame() {
+
+    currentQuestion = 0;
+    score = 0;
+
+    document.getElementById("startScreen")
+        .classList.add("hidden");
+
+    document.getElementById("resultScreen")
+        .classList.add("hidden");
+
+    document.getElementById("gameScreen")
+        .classList.remove("hidden");
+
+    showQuestion();
+}
+
+
+function showQuestion() {
+
+    answered = false;
+
+    const q = questions[currentQuestion];
+
+    document.getElementById("questionNumber")
+        .textContent = currentQuestion + 1;
+
+    document.getElementById("score")
+        .textContent = score;
+
+    document.getElementById("emoji")
+        .textContent = q.emoji;
+
+    document.getElementById("question")
+        .textContent = q.question;
+
+    document.getElementById("message")
+        .textContent = "";
+
+    document.getElementById("nextButton")
+        .classList.add("hidden");
+
+    const answersDiv = document.getElementById("answers");
+
+    answersDiv.innerHTML = "";
+
+    q.answers.forEach((answer, index) => {
+
+        const button = document.createElement("button");
+
+        button.className = "answer";
+
+        button.textContent = answer;
+
+        button.onclick = function() {
+            checkAnswer(index, button);
+        };
+
+        answersDiv.appendChild(button);
+
+    });
+
+}
+
+
+function checkAnswer(selected, button) {
+
+    if (answered) {
+        return;
+    }
+
+    answered = true;
+
+    const q = questions[currentQuestion];
+
+    const buttons =
+        document.querySelectorAll(".answer");
+
+    buttons.forEach(btn => {
+        btn.disabled = true;
+    });
+
+
+    if (selected === q.correct) {
+
+        button.classList.add("correct");
+
+        score += 10;
+
+        document.getElementById("message")
+            .textContent = "🎉 إجابة صحيحة! أحسنت";
+
+    } else {
+
+        button.classList.add("wrong");
+
+        buttons[q.correct]
+            .classList.add("correct");
+
+        document.getElementById("message")
+            .textContent = "❌ إجابة غير صحيحة، حاول تذكرها";
+
+    }
+
+    document.getElementById("score")
+        .textContent = score;
+
+    document.getElementById("nextButton")
+        .classList.remove("hidden");
+
+}
+
+
+function nextQuestion() {
+
+    currentQuestion++;
+
+    if (currentQuestion >= questions.length) {
+
+        showResult();
+
+    } else {
+
+        showQuestion();
+
+    }
+
+}
+
+
+function showResult() {
+
+    document.getElementById("gameScreen")
+        .classList.add("hidden");
+
+    document.getElementById("resultScreen")
+        .classList.remove("hidden");
+
+    document.getElementById("result")
+        .textContent =
+        "حصلت على " + score + " من " +
+        (questions.length * 10) + " نقطة ⭐";
+
+}
+
+
+function restartGame() {
+
+    document.getElementById("resultScreen")
+        .classList.add("hidden");
+
+    document.getElementById("startScreen")
+        .classList.remove("hidden");
+
+}
+
+</script>
+
+</body>
+</html>
